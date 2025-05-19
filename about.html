@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>هاوية - مين إحنا؟</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <a href="index.html" class="main-logo-link"><img src="resources/hawya.png" alt="هاوية" class="main-logo"></a>
+  <a href="join.html" class="join-btn-fixed">خليك معانا</a>
+  <header>
+    <nav>
+      <a href="danger.html">اعرف الخطر</a>
+      <a href="protect.html">احمي نفسك</a>
+      <a href="about.html" class="active">مين إحنا؟</a>
+    </nav>
+  </header>
+  <main>
+    <section class="about-section">
+      <h1 class="main-title">مين احنا؟</h1>
+      <span class="underline"></span>
+      <div class="about-desc">
+        <p>إحنا فريق شباب عنده هوس <span class="highlight">بالحماية الإلكترونية</span>، اشتغلنا على حملة "هاوية" علشان نحارب الجهل الرقمي ونساعدك تكتشف الخطر قبل ما يقع. مش خبراء أمن سيبراني، لكن فاهمين وعارفين إزاي نوصل المعلومة بطريقة خفيفة، ممتعة، وتفكرك تنقذ نفسك!</p>
+      </div>
+    </section>
+    <section class="team-section">
+      <h2 class="team-title">أعضاء الفريق</h2>
+      <span class="underline"></span>
+      <div class="team-grid">
+        <div class="team-row">
+          <div class="team-member">
+            <img src="resources/team/Sondos Saeed.png" alt="Sondos Saeed" class="team-img">
+            <div class="team-name">Sondos Saeed</div>
+          </div>
+          <div class="team-member">
+            <img src="resources/team/Habiba Yousef.png" alt="Habiba Yousef" class="team-img">
+            <div class="team-name">Habiba Yousef</div>
+          </div>
+          <div class="team-member">
+            <img src="resources/team/Alaa El Nady.png" alt="Alaa El Nady" class="team-img">
+            <div class="team-name">Alaa El Nady</div>
+          </div>
+          <div class="team-member">
+            <img src="resources/team/Israa Mohamed.png" alt="Israa Mohamed" class="team-img">
+            <div class="team-name">Israa Mohamed</div>
+          </div>
+        </div>
+        <div class="team-row">
+          <div class="team-member">
+            <img src="resources/team/Habiba Marwan.png" alt="Habiba Marwan" class="team-img">
+            <div class="team-name">Habiba Marwan</div>
+          </div>
+          <div class="team-member">
+            <img src="resources/team/Eman Hamed.png" alt="Eman Hamed" class="team-img">
+            <div class="team-name">Eman Hamed</div>
+          </div>
+          <div class="team-member">
+            <img src="resources/team/Toka Emad.png" alt="Toka Emad" class="team-img">
+            <div class="team-name">Toka Emad</div>
+          </div>
+          <div class="team-member">
+            <img src="resources/team/Eman Waheed.png" alt="Eman Waheed" class="team-img">
+            <div class="team-name">Eman Waheed</div>
+          </div>
+        </div>
+        <div class="team-row">
+          <div class="team-member">
+            <img src="resources/team/Fatma Yousef.png" alt="Fatma Yousef" class="team-img">
+            <div class="team-name">Fatma Yousef</div>
+          </div>
+          <div class="team-member">
+            <img src="resources/team/Toka Fathy.png" alt="Toka Fathy" class="team-img">
+            <div class="team-name">Toka Fathy</div>
+          </div>
+          <div class="team-member">
+            <img src="resources/team/Sara Abd el Aziz.png" alt="Sara Abd el Aziz" class="team-img">
+            <div class="team-name">Sara Abd el Aziz</div>
+          </div>
+        </div>
+      </div>
+      <!-- Modal for full image -->
+      <div id="img-modal" class="img-modal" style="display:none;">
+        <span class="img-modal-close" id="img-modal-close">&times;</span>
+        <img class="img-modal-content" id="img-modal-full">
+        <div id="img-modal-caption"></div>
+      </div>
+    </section>
+  </main>
+  <footer class="main-footer">
+    <div class="footer-line"></div>
+    <div class="footer-content">
+      <span>© 2024 هاوية</span>
+      <span>|</span>
+      <span>جميع الحقوق محفوظة</span>
+    </div>
+  </footer>
+  <script src="script.js"></script>
+  <script>
+    // Modal image logic
+    document.querySelectorAll('.team-img').forEach(function(img) {
+      img.addEventListener('click', function() {
+        var modal = document.getElementById('img-modal');
+        var modalImg = document.getElementById('img-modal-full');
+        var caption = document.getElementById('img-modal-caption');
+        modal.style.display = 'flex';
+        modalImg.src = this.src;
+        caption.textContent = this.alt;
+      });
+    });
+    document.getElementById('img-modal-close').onclick = function() {
+      document.getElementById('img-modal').style.display = 'none';
+    };
+    document.getElementById('img-modal').onclick = function(e) {
+      if (e.target === this) {
+        this.style.display = 'none';
+      }
+    };
+  </script>
+</body>
+</html> 
