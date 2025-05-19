@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>هاوية - لعبة الحماية</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body, html {
+      width: 100vw;
+      height: 100vh;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background: #0a0a16;
+    }
+    .game-header {
+      position: absolute;
+      top: 2rem;
+      right: 2rem;
+      z-index: 10;
+      color: #fff;
+      font-size: 2rem;
+      font-weight: bold;
+      text-shadow: 2px 4px 0 #6c63ff, 0 0 12px #000;
+    }
+    .tip-box {
+      position: absolute;
+      bottom: 3rem;
+      right: 50%;
+      transform: translateX(50%);
+      background: rgba(44, 38, 56, 0.97);
+      color: #baff39;
+      font-size: 1.5rem;
+      font-weight: bold;
+      border-radius: 1.2rem;
+      padding: 1.2rem 2.2rem;
+      box-shadow: 0 0 24px 0 #baff3933, 0 2px 16px 0 #0008;
+      min-width: 320px;
+      text-align: center;
+      display: none;
+      z-index: 20;
+    }
+    .game-canvas {
+      display: block;
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 1;
+      background: transparent;
+    }
+    .game-btn-exit {
+      position: absolute;
+      top: 2rem;
+      left: 2rem;
+      z-index: 10;
+      background: #fff;
+      color: #000;
+      border-radius: 1.2rem;
+      padding: 0.5rem 1.5rem;
+      font-size: 1.1rem;
+      font-weight: bold;
+      text-decoration: none;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      transition: background 0.2s, color 0.2s;
+      border: none;
+      cursor: pointer;
+    }
+    .game-btn-exit:hover {
+      background: #baff39;
+      color: #23232b;
+    }
+  </style>
+</head>
+<body>
+  <a href="index.html" class="game-btn-exit">خروج</a>
+  <div class="game-header">لعبة هاوية: اقفز وخد جوايز ونصائح!</div>
+  <canvas id="game-canvas" class="game-canvas"></canvas>
+  <div id="tip-box" class="tip-box"></div>
+  <script>
+    // نصائح افتراضية
+    const tips = [
+      "لا تشارك كلمة مرورك مع أي شخص.",
+      "استخدم كلمات مرور قوية وفريدة.",
+      "حدّث برامجك باستمرار لسد الثغرات.",
+      "لا تضغط على روابط مشبوهة في الرسائل.",
+      "فعّل التحقق بخطوتين لحساباتك المهمة.",
+      "لا تشارك معلوماتك الشخصية مع الغرباء.",
+      "احذر من تحميل ملفات من مصادر غير موثوقة.",
+      "استخدم برامج مكافحة الفيروسات.",
+      "تأكد من عنوان الموقع قبل إدخال بياناتك.",
+      "لا تترك أجهزتك بدون قفل في الأماكن العامة.",
+      "لا تفتح مرفقات البريد الإلكتروني من مصادر غير معروفة.",
+      "استخدم شبكة واي فاي آمنة وتجنب الشبكات العامة.",
+      "لا تضع بياناتك الشخصية على مواقع غير موثوقة.",
+      "احذر من الرسائل التي تطلب منك تحديث بياناتك البنكية.",
+      "استخدم متصفحًا محدثًا وآمنًا دائماً.",
+      "لا ترد على الرسائل المجهولة التي تطلب معلومات حساسة.",
+      "احرص على تسجيل الخروج من حساباتك بعد الانتهاء.",
+      "استخدم خاصية القفل البيومتري أو رمز PIN لهاتفك.",
+      "لا تترك بياناتك الشخصية على أجهزة مشتركة.",
+      "راجع إعدادات الخصوصية في حساباتك بشكل دوري."
+    ];
+    function showTip() {
+      const tipBox = document.getElementById('tip-box');
+      const tip = tips[Math.floor(Math.random()*tips.length)];
+      tipBox.textContent = tip;
+      tipBox.style.display = 'block';
+      setTimeout(() => { tipBox.style.display = 'none'; }, 2500);
+    }
+
+    // إعدادات اللعبة
+    const canvas = document.getElementById('game-canvas');
+    const ctx = canvas.getContext('2d');
+    let W = window.innerWidth;
+    let H = window.innerHeight;
+    canvas.width = W;
+    canvas.height = H;
+
+    // تحميل الصور
+    const bgImg = new Image();
+    bgImg.src = 'resources/Game/BG.png';
+    const birdImg = new Image();
+    birdImg.src = 'resources/Game/Bird.png';
+    const playerImg = new Image();
+    playerImg.src = 'resources/Game/player2.png';
+    const obstacleImg = new Image();
+    obstacleImg.src = 'resources/Game/obstacle.png';
+    const prizeImgs = [0,1,2,3].map(i => {
+      const img = new Image();
+      img.src = `resources/Game/prize${i}.png`;
+      return img;
+    });
+
+    // اللاعب
+    const player = {
+      x: 120,
+      y: H - 220,
+      w: 160,
+      h: 180,
+      vy: 0,
+      jumping: false
+    };
+    const gravity = 1.2;
+    const jumpHeight = 120; // ارتفاع القفزة الجديد
+    const jumpPower = -18; // تقريباً يحقق قفزة 120 بكسل مع الجاذبية الحالية
+    // الجوائز فقط
+    let prizes = [];
+    let lastPrizeTime = 0;
+    let score = 0;
+    let gameOver = false;
+
+    function spawnPrize() {
+      const prW = 50 * 4, prH = 50 * 4;
+      // الجوائز تظهر دائماً بين H-520 و H-450
+      const minY = H - 520;
+      const maxY = H - 450;
+      const y = minY + Math.random() * (maxY - minY);
+      const imgIdx = Math.floor(Math.random()*prizeImgs.length);
+      prizes.push({ x: W, y, w: prW, h: prH, imgIdx, taken: false });
+    }
+    function jump() {
+      if (!player.jumping && !gameOver) {
+        player.vy = jumpPower;
+        player.jumping = true;
+      }
+    }
+    document.addEventListener('keydown', function(e) {
+      if (e.code === 'Space' || e.key === 'ArrowUp') jump();
+    });
+    canvas.addEventListener('mousedown', jump);
+    canvas.addEventListener('touchstart', jump);
+
+    // أضف زر إعادة المحاولة للـ tip-box
+    const tipBox = document.getElementById('tip-box');
+    function showLose() {
+      tipBox.innerHTML = '<div>لقد خسرت!</div><button id="retry-btn" style="margin-top:1rem;padding:0.7rem 2rem;font-size:1.2rem;font-weight:bold;border-radius:1rem;background:#baff39;color:#23232b;border:none;cursor:pointer;">أعد المحاولة</button>';
+      tipBox.style.display = 'block';
+      document.getElementById('retry-btn').onclick = function() { location.reload(); };
+    }
+
+    function update() {
+      if (gameOver) return;
+      // جاذبية
+      player.vy += gravity;
+      player.y += player.vy;
+      if (player.y >= H - 220) {
+        player.y = H - 220;
+        player.vy = 0;
+        player.jumping = false;
+      }
+      if (player.y < 0) player.y = 0;
+      // تحريك الجوائز
+      for (let i = 0; i < prizes.length; i++) {
+        prizes[i].x -= 7.5;
+      }
+      prizes = prizes.filter(p => p.x + p.w > 0);
+      // إضافة جائزة
+      if (Date.now() - lastPrizeTime > 1800 + Math.random()*1200) {
+        spawnPrize();
+        lastPrizeTime = Date.now();
+      }
+      // تصادم مع الجوائز
+      for (let i = 0; i < prizes.length; i++) {
+        if (!prizes[i].taken &&
+          player.x + player.w > prizes[i].x &&
+          player.x < prizes[i].x + prizes[i].w &&
+          player.y + player.h > prizes[i].y &&
+          player.y < prizes[i].y + prizes[i].h
+        ) {
+          prizes[i].taken = true;
+          score += 2;
+          showTip();
+        }
+        // شرط الخسارة: إذا مرت جائزة من اللاعب
+        if (!prizes[i].taken && prizes[i].x + prizes[i].w < player.x) {
+          gameOver = true;
+          showLose();
+          return;
+        }
+      }
+    }
+    function draw() {
+      ctx.clearRect(0, 0, W, H);
+      // الخلفية
+      ctx.drawImage(bgImg, 0, 0, W, H);
+      // Bird في الأعلى
+      ctx.drawImage(birdImg, W/2 - 60, 30, 120, 80);
+      // اللاعب
+      ctx.drawImage(playerImg, player.x, player.y, player.w, player.h);
+      // الجوائز
+      for (let i = 0; i < prizes.length; i++) {
+        if (!prizes[i].taken)
+          ctx.drawImage(prizeImgs[prizes[i].imgIdx], prizes[i].x, prizes[i].y, prizes[i].w, prizes[i].h);
+      }
+      // النقاط
+      ctx.font = 'bold 2rem Cairo, Arial';
+      ctx.fillStyle = '#baff39';
+      ctx.textAlign = 'center';
+      ctx.fillText('النقاط: ' + score, W / 2, 60);
+    }
+    let animId;
+    function gameLoop() {
+      update();
+      draw();
+      if (!gameOver) animId = requestAnimationFrame(gameLoop);
+    }
+    // إعادة ضبط عند تغيير حجم الشاشة
+    window.addEventListener('resize', function() {
+      W = window.innerWidth;
+      H = window.innerHeight;
+      canvas.width = W;
+      canvas.height = H;
+      player.x = 120;
+    });
+    // بدء اللعبة بعد تحميل الصور
+    let loaded = 0;
+    function tryStart() {
+      loaded++;
+      if (loaded === 6) gameLoop();
+    }
+    bgImg.onload = tryStart;
+    birdImg.onload = tryStart;
+    playerImg.onload = tryStart;
+    obstacleImg.onload = tryStart;
+    prizeImgs.forEach(img => img.onload = tryStart);
+  </script>
+</body>
+</html> 
